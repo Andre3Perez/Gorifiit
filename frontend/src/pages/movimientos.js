@@ -23,6 +23,14 @@ export default function Movimientos() {
     fetchProducts();
   }, []);
 
+  // Limpiar motivo cuando cambia el tipo de movimiento
+  useEffect(() => {
+    setFormData(prev => ({
+      ...prev,
+      motivo: '',
+    }));
+  }, [tipoMovimiento]);
+
   const fetchProducts = async () => {
     try {
       const response = await productService.getAll();
@@ -36,9 +44,16 @@ export default function Movimientos() {
   };
 
   const handleChange = (e) => {
+    const { name, value } = e.target;
+    
+    // Limpiar y convertir cantidad a número si es el campo cantidad
+    const newValue = name === 'cantidad' 
+      ? value.replace(/[^0-9]/g, '') // Solo permitir números
+      : value;
+    
     setFormData({
       ...formData,
-      [e.target.name]: e.target.value,
+      [name]: newValue,
     });
   };
 
@@ -50,16 +65,31 @@ export default function Movimientos() {
       return;
     }
 
+    // Validar que la cantidad sea un número válido
+    const cantidadNum = parseInt(formData.cantidad, 10);
+    if (isNaN(cantidadNum) || cantidadNum <= 0) {
+      toast.error('La cantidad debe ser un número mayor a 0');
+      return;
+    }
+
+    // Preparar datos con cantidad como número
+    const dataToSend = {
+      producto: formData.producto,
+      cantidad: cantidadNum,
+      motivo: formData.motivo,
+      observaciones: formData.observaciones,
+    };
+
     try {
       if (tipoMovimiento === 'entrada') {
-        await movementService.registrarEntrada(formData);
+        await movementService.registrarEntrada(dataToSend);
         toast.success('✅ Entrada registrada exitosamente');
       } else {
-        await movementService.registrarSalida(formData);
+        await movementService.registrarSalida(dataToSend);
         toast.success('✅ Salida registrada exitosamente');
       }
 
-      // Resetear formulario
+      // Resetear formulario completamente
       setFormData({
         producto: '',
         cantidad: '',
@@ -67,8 +97,10 @@ export default function Movimientos() {
         observaciones: '',
       });
 
-      // Recargar productos para actualizar stock
-      fetchProducts();
+      // Pequeño delay para asegurar que la DB se actualizó
+      setTimeout(() => {
+        fetchProducts();
+      }, 100);
     } catch (error) {
       console.error('Error al registrar movimiento:', error);
       toast.error(error.response?.data?.message || 'Error al registrar el movimiento');
@@ -159,8 +191,10 @@ export default function Movimientos() {
             <Input
               label="Cantidad"
               name="cantidad"
-              type="number"
-              min="1"
+              type="text"
+              inputMode="numeric"
+              pattern="[0-9]*"
+              placeholder="Ingrese la cantidad"
               value={formData.cantidad}
               onChange={handleChange}
               required

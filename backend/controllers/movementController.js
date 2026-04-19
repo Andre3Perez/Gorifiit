@@ -78,23 +78,23 @@ const registrarEntrada = async (req, res, next) => {
   try {
     const { producto: productoId, cantidad, motivo, observaciones } = req.body;
 
-    // Convertir cantidad a número
-    const cantidadNum = parseInt(cantidad, 10);
+    // Convertir cantidad a número (soporta string o number)
+    const cantidadNum = Number(cantidad);
 
     // Validar campos
-    if (!productoId || !cantidadNum || !motivo) {
+    if (!productoId || !motivo) {
       await session.abortTransaction();
       return res.status(400).json({
         success: false,
-        message: 'Por favor proporcione producto, cantidad y motivo'
+        message: 'Por favor proporcione producto y motivo'
       });
     }
 
-    if (cantidadNum <= 0 || isNaN(cantidadNum)) {
+    if (!cantidad || isNaN(cantidadNum) || cantidadNum <= 0) {
       await session.abortTransaction();
       return res.status(400).json({
         success: false,
-        message: 'La cantidad debe ser mayor a 0'
+        message: 'La cantidad debe ser un número válido mayor a 0'
       });
     }
 
@@ -109,8 +109,8 @@ const registrarEntrada = async (req, res, next) => {
       });
     }
 
-    // Guardar stock anterior
-    const stockAnterior = producto.stock;
+    // Guardar stock anterior y calcular nuevo stock
+    const stockAnterior = Number(producto.stock);
     const stockNuevo = stockAnterior + cantidadNum;
 
     // Actualizar stock del producto
@@ -161,23 +161,23 @@ const registrarSalida = async (req, res, next) => {
   try {
     const { producto: productoId, cantidad, motivo, observaciones } = req.body;
 
-    // Convertir cantidad a número
-    const cantidadNum = parseInt(cantidad, 10);
+    // Convertir cantidad a número (soporta string o number)
+    const cantidadNum = Number(cantidad);
 
     // Validar campos
-    if (!productoId || !cantidadNum || !motivo) {
+    if (!productoId || !motivo) {
       await session.abortTransaction();
       return res.status(400).json({
         success: false,
-        message: 'Por favor proporcione producto, cantidad y motivo'
+        message: 'Por favor proporcione producto y motivo'
       });
     }
 
-    if (cantidadNum <= 0 || isNaN(cantidadNum)) {
+    if (!cantidad || isNaN(cantidadNum) || cantidadNum <= 0) {
       await session.abortTransaction();
       return res.status(400).json({
         success: false,
-        message: 'La cantidad debe ser mayor a 0'
+        message: 'La cantidad debe ser un número válido mayor a 0'
       });
     }
 
@@ -193,16 +193,17 @@ const registrarSalida = async (req, res, next) => {
     }
 
     // Validar stock suficiente
-    if (producto.stock < cantidadNum) {
+    const stockAnterior = Number(producto.stock);
+    
+    if (stockAnterior < cantidadNum) {
       await session.abortTransaction();
       return res.status(400).json({
         success: false,
-        message: `Stock insuficiente. Stock actual: ${producto.stock}, cantidad solicitada: ${cantidadNum}`
+        message: `Stock insuficiente. Stock actual: ${stockAnterior}, cantidad solicitada: ${cantidadNum}`
       });
     }
 
-    // Guardar stock anterior
-    const stockAnterior = producto.stock;
+    // Calcular nuevo stock
     const stockNuevo = stockAnterior - cantidadNum;
 
     // Actualizar stock del producto
