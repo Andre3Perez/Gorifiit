@@ -78,8 +78,11 @@ const registrarEntrada = async (req, res, next) => {
   try {
     const { producto: productoId, cantidad, motivo, observaciones } = req.body;
 
+    // Convertir cantidad a número
+    const cantidadNum = parseInt(cantidad, 10);
+
     // Validar campos
-    if (!productoId || !cantidad || !motivo) {
+    if (!productoId || !cantidadNum || !motivo) {
       await session.abortTransaction();
       return res.status(400).json({
         success: false,
@@ -87,7 +90,7 @@ const registrarEntrada = async (req, res, next) => {
       });
     }
 
-    if (cantidad <= 0) {
+    if (cantidadNum <= 0 || isNaN(cantidadNum)) {
       await session.abortTransaction();
       return res.status(400).json({
         success: false,
@@ -108,7 +111,7 @@ const registrarEntrada = async (req, res, next) => {
 
     // Guardar stock anterior
     const stockAnterior = producto.stock;
-    const stockNuevo = stockAnterior + cantidad;
+    const stockNuevo = stockAnterior + cantidadNum;
 
     // Actualizar stock del producto
     producto.stock = stockNuevo;
@@ -118,7 +121,7 @@ const registrarEntrada = async (req, res, next) => {
     const movement = await Movement.create([{
       tipo: 'entrada',
       producto: productoId,
-      cantidad,
+      cantidad: cantidadNum,
       motivo,
       observaciones,
       usuario: req.user._id,
@@ -158,8 +161,11 @@ const registrarSalida = async (req, res, next) => {
   try {
     const { producto: productoId, cantidad, motivo, observaciones } = req.body;
 
+    // Convertir cantidad a número
+    const cantidadNum = parseInt(cantidad, 10);
+
     // Validar campos
-    if (!productoId || !cantidad || !motivo) {
+    if (!productoId || !cantidadNum || !motivo) {
       await session.abortTransaction();
       return res.status(400).json({
         success: false,
@@ -167,7 +173,7 @@ const registrarSalida = async (req, res, next) => {
       });
     }
 
-    if (cantidad <= 0) {
+    if (cantidadNum <= 0 || isNaN(cantidadNum)) {
       await session.abortTransaction();
       return res.status(400).json({
         success: false,
@@ -187,17 +193,17 @@ const registrarSalida = async (req, res, next) => {
     }
 
     // Validar stock suficiente
-    if (producto.stock < cantidad) {
+    if (producto.stock < cantidadNum) {
       await session.abortTransaction();
       return res.status(400).json({
         success: false,
-        message: `Stock insuficiente. Stock actual: ${producto.stock}, cantidad solicitada: ${cantidad}`
+        message: `Stock insuficiente. Stock actual: ${producto.stock}, cantidad solicitada: ${cantidadNum}`
       });
     }
 
     // Guardar stock anterior
     const stockAnterior = producto.stock;
-    const stockNuevo = stockAnterior - cantidad;
+    const stockNuevo = stockAnterior - cantidadNum;
 
     // Actualizar stock del producto
     producto.stock = stockNuevo;
@@ -207,7 +213,7 @@ const registrarSalida = async (req, res, next) => {
     const movement = await Movement.create([{
       tipo: 'salida',
       producto: productoId,
-      cantidad,
+      cantidad: cantidadNum,
       motivo,
       observaciones,
       usuario: req.user._id,
