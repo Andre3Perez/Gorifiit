@@ -203,7 +203,6 @@ gorifit-test/
 │   │   │   └── movementService.js
 │   │   └── styles/
 │   │       └── globals.css
-│   ├── .env.local
 │   ├── next.config.js
 │   ├── tailwind.config.js
 │   └── package.json
