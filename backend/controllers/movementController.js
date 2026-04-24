@@ -23,7 +23,7 @@ const getMovements = async (req, res, next) => {
     }
 
     const movements = await Movement.find(query)
-      .populate('producto', 'nombre categoria')
+      .populate('producto', 'nombre categoria precio')
       .populate('usuario', 'username')
       .sort({ createdAt: -1 })
       .limit(parseInt(limit));

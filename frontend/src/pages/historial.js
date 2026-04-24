@@ -70,6 +70,26 @@ export default function Historial() {
     });
   };
 
+  const formatCurrency = (value) => {
+    return new Intl.NumberFormat('es-CO', {
+      style: 'currency',
+      currency: 'COP',
+      minimumFractionDigits: 0,
+      maximumFractionDigits: 0,
+    }).format(value);
+  };
+
+  const calcularValorMovimiento = (movement) => {
+    if (!movement.producto?.precio) return 0;
+    const valor = movement.cantidad * movement.producto.precio;
+    return movement.tipo === 'entrada' ? valor : -valor;
+  };
+
+  const calcularValorStock = (movement) => {
+    if (!movement.producto?.precio) return 0;
+    return movement.stockNuevo * movement.producto.precio;
+  };
+
   if (loading) {
     return (
       <div className="container mx-auto px-4 py-8">
@@ -156,7 +176,7 @@ export default function Historial() {
                     </div>
                   </div>
 
-                  <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mt-4">
+                  <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-4 mt-4">
                     <div>
                       <p className="text-xs text-gray-600">Tipo</p>
                       <p
@@ -186,6 +206,24 @@ export default function Historial() {
                       <p className="text-xs text-gray-600">Stock Nuevo</p>
                       <p className="font-semibold text-gray-700">
                         {movement.stockNuevo}
+                      </p>
+                    </div>
+
+                    <div>
+                      <p className="text-xs text-gray-600">Valor Movimiento</p>
+                      <p
+                        className={`font-bold ${
+                          movement.tipo === 'entrada' ? 'text-green-600' : 'text-red-600'
+                        }`}
+                      >
+                        {formatCurrency(calcularValorMovimiento(movement))}
+                      </p>
+                    </div>
+
+                    <div>
+                      <p className="text-xs text-gray-600">Valor en Stock</p>
+                      <p className="font-bold text-blue-600">
+                        {formatCurrency(calcularValorStock(movement))}
                       </p>
                     </div>
                   </div>
