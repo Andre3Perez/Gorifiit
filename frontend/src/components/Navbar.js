@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react';
 import Link from 'next/link';
 import { useRouter } from 'next/router';
+import Image from 'next/image';
 
 export default function Navbar({ user, onLogout }) {
   const router = useRouter();
@@ -39,7 +40,17 @@ export default function Navbar({ user, onLogout }) {
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="flex items-center justify-between h-16">
           {/* Logo */}
-          <Link href="/dashboard" className="flex items-center space-x-2">
+          <Link href="/dashboard" className="flex items-center space-x-3 group">
+            <div className="relative w-12 h-12 transition-transform duration-300 group-hover:scale-110">
+              <Image
+                src="/images/LOGO_GORIFIT-PNG.png"
+                alt="Gorifit Logo"
+                width={48}
+                height={48}
+                className="object-contain"
+                priority
+              />
+            </div>
             <div className="text-2xl font-bold bg-gradient-to-r from-primary-500 to-primary-700 bg-clip-text text-transparent">
               GORIFIT
             </div>
