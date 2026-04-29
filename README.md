@@ -62,7 +62,7 @@ Sistema que permite llevar un control de inventario en tiempo real, registrando 
 ### Paso 1: Clonar o descargar el proyecto
 
 ```bash
-cd gorifit-test
+cd gorifiit
 ```
 
 ### Paso 2: Configurar Backend
